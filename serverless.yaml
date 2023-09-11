@@ -1,0 +1,90 @@
+service: serverless-example
+
+plugins:
+  - serverless-offline
+  - serverless-websockets-plugin
+  - serverless-dynamodb-local
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  websocketsApiName: custom-websockets-api-name
+  websocketsApiRouteSelectionExpression: $request.body.action # custom routes are selected by the value of the action property in the body
+  websocketsDescription: Custom Serverless Websockets
+
+functions:
+  main:
+    handler: dist/index.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
+  connect:
+    handler: dist/handlers/websocket/handler.connect
+    events:
+      - websocket:
+          route: $connect
+      - websocket:
+          route: $disconnect
+  message:
+    handler: dist/handlers/websocket/handler.message
+    events:
+      - websocket:
+          route: message
+
+custom:
+  # serverless-offline:
+  #   port: 3000
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      dbPath: ./ # This stores the db file at the root of the working directory of the project.
+      migrate: true
+      seed: false
+      convertEmptyValues: true
+
+resources:
+  Resources:
+    connectionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        # Generate a name based on the stage
+        TableName: connections
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        AttributeDefinitions:
+          - AttributeName: channel
+            AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+          - AttributeName: channel
+            KeyType: RANGE
+            
+    connectionsChannelsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        # Generate a name based on the stage
+        TableName: connectionsChannels
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        AttributeDefinitions:
+          - AttributeName: channel
+            AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+          - AttributeName: channel
+            KeyType: RANGE
+          

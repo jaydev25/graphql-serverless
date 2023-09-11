@@ -1,0 +1,46 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateUserInput {
+  mobileNo: String!
+  password: String!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): UserType!
+}
+
+type Query {
+  login(input: CreateUserInput!): TokenType!
+  user(mobileNo: String!): UserType!
+  users: [UserType!]!
+  validateToken(token: String!): TokenType!
+}
+
+type Subscription {
+  userLoggedIn: TokenType!
+}
+
+type TokenType {
+  id: String!
+  message: String!
+  mobileNo: String!
+  status: UserStatus!
+  success: Boolean!
+  token: String!
+  verified: Boolean!
+}
+
+enum UserStatus {
+  ACTIVE
+  CREATED
+  SUSPENDED
+}
+
+type UserType {
+  id: String!
+  mobileNo: String!
+  status: UserStatus!
+  verified: Boolean!
+}
