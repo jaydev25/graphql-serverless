@@ -35,15 +35,18 @@ $ npm install
 ## Running the statefull app
 
 ```bash
+# watch mode
+$ npm run dev
+
 # development
 $ npm run start
-
-# watch mode
-$ npm run start:dev
 
 # production mode
 $ npm run start:prod
 ```
+
+Statefull server Serving on http://localhost:4000/
+Statefull server playground Serving on http://localhost:4000/graphql
 
 ## Running the serverless app
 
@@ -53,3 +56,8 @@ $ npm run start:prod
 $ npm run serverless
 ```
 
+Serverless app Serving on http://localhost:3000/dev/
+Serverless app playground Serving on http://localhost:3000/dev/graphql
+
+Serverless app api gateway [websocket] listening on ws://localhost:3001
+Serverless app api gateway [http for websocket] listening on http://localhost:3001

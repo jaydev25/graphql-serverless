@@ -7,8 +7,16 @@ input CreateUserInput {
   password: String!
 }
 
+input Message {
+  message: String!
+  mobileNo: String!
+}
+
 type Mutation {
   createUser(input: CreateUserInput!): UserType!
+  pubSub(publish: String!): String!
+  sendMessage(input: Message!): String!
+  userTyping(input: Message!): String!
 }
 
 type Query {
@@ -19,7 +27,7 @@ type Query {
 }
 
 type Subscription {
-  userLoggedIn: TokenType!
+  userAction(mobileNo: String!): String!
 }
 
 type TokenType {

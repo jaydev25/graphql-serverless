@@ -1,8 +1,9 @@
 // src/users/users.resolver.ts
 import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { UserType, CreateUserInput, TokenType } from './users.model';
+import { UserType, CreateUserInput, TokenType, Message } from './users.model';
 import { PubSub } from 'graphql-subscriptions';
+import Publish from './../helpers/pub.sub';
 
 const pubsub = new PubSub();
 
@@ -27,10 +28,23 @@ export class UsersResolver {
 
   @Query(() => TokenType)
   async login(@Args('input') input: CreateUserInput) {
-    const loggedInUser = await this.usersService.login(input);
-    pubsub.publish('LOGGED_IN', { userLoggedIn: loggedInUser });
+    try {
+      const loggedInUser = await this.usersService.login(input);
 
-    return loggedInUser;
+      const publish = {
+        publishTo: `USER_ACTION_${loggedInUser.mobileNo}`,
+        data: {
+          type: 'USER_LOGGED_IN',
+          payload: loggedInUser,
+        },
+      };
+
+      Publish(publish);
+
+      return loggedInUser;
+    } catch (error) {
+      console.log('login error', error);
+    }
   }
 
   @Query(() => TokenType)
@@ -38,9 +52,52 @@ export class UsersResolver {
     return this.usersService.validateToken(token);
   }
 
-  @Subscription(() => TokenType)
-  async userLoggedIn() {
-    return pubsub.asyncIterator('LOGGED_IN');
+  @Mutation(() => String)
+  async pubSub(@Args('publish') publish: string) {
+    const publishObj = JSON.parse(publish);
+
+    pubsub.publish(publishObj.publishTo, {
+      userAction: JSON.stringify(publishObj.data),
+    });
+
+    return 'Success!';
+  }
+
+  @Subscription(() => String)
+  async userAction(@Args('mobileNo') mobileNo: string) {
+    return pubsub.asyncIterator(`USER_ACTION_${mobileNo}`);
+  }
+
+  @Mutation(() => String)
+  async sendMessage(@Args('input') input: Message) {
+    try {
+      const publish = {
+        publishTo: `USER_ACTION_${input.mobileNo}`,
+        data: { type: 'MESSAGE', payload: input },
+      };
+
+      Publish(publish);
+
+      return 'Success!';
+    } catch (error) {
+      console.log('login error', error);
+    }
+  }
+
+  @Mutation(() => String)
+  async userTyping(@Args('input') input: Message) {
+    try {
+      const publish = {
+        publishTo: `USER_ACTION_${input.mobileNo}`,
+        data: { type: 'USER_TYPING ', payload: input },
+      };
+
+      Publish(publish);
+
+      return 'Success!';
+    } catch (error) {
+      console.log('login error', error);
+    }
   }
 
   // @Mutation(() => UserType)

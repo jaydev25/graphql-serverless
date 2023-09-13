@@ -60,3 +60,12 @@ export class TokenType extends UserType {
   @Field()
   readonly message: string;
 }
+
+@InputType()
+export class Message {
+  @Field()
+  readonly mobileNo: string;
+
+  @Field()
+  readonly message: string;
+}
